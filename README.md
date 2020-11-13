@@ -162,12 +162,14 @@ Then it's just:
 import os
 import time
 import cv2 as cv
-import argparse
 
 net = cv.dnn_DetectionModel('frozen_inference_graph.pb', 'cvgraph.pbtxt')
 
+# Following is not necessary, change it if you use another backend like Intel Inference Engine of OpenVino
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
+
+
 net.setInputSize(300, 300)
 net.setInputSwapRB(True)
 
