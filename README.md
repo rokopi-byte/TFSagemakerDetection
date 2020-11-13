@@ -5,13 +5,13 @@ In this repo a complete pipeline for a custom dataset object detection is presen
 First, I would like to thank the following user for their work: [svpino](https://github.com/svpino/tensorflow-object-detection-sagemaker),  [douglasrizzo](https://github.com/douglasrizzo/detection_util_scripts)
 
 Part of this repo is taken from them and slightly adapted and everything is put together.
-We are going to use the Tensorflow Object Detection API v.1.14 on Tensorflow-GPU 1.15 for the training with a docker image on AWS Sagemaker. Specifically we will use a pretained model for transfer learning on a custom class and inference on Raspberry PI 4.
+We are going to use the Tensorflow Object Detection API v.1.14 on Tensorflow-GPU 1.15 for the training with a docker image on AWS Sagemaker.
+Specifically we will use a pretained model for transfer learning on a custom class and inference on Raspberry PI 4.
 Content of this repo:
 
-* src_code: main code to be put in the container.  
-* Dockerfile: dockerfile to build the container. 
+* src_code: main code for the container to launch the training with Tensorflow Object Detection API.  
+* Dockerfile: dockerfile to build the container with Tensorflow Object Detection API and Coco API installed. 
 * Scripts for data preparation
-* Scripts for inference
 
 ## Install Tensorflow Object Detection API
 
@@ -22,8 +22,8 @@ You can follow the official [repo](https://github.com/tensorflow/models/blob/mas
 First step is to prepare your data, more details [here](https://github.com/tensorflow/models/blob/v1.13.0/research/object_detection/g3doc/using_your_own_dataset.md).
 
 ### Annotation
-You can use [labelImg](https://github.com/tzutalin/labelImg) to annotate your images. You will obtain a single xml annotation for each image in your dataset. Suppose now you a folder `img` with your images and a folder `annotations` with the annotations just generated.
-Using the script `create_csv.py` transform all the xml in a single csv file.
+You can use [labelImg](https://github.com/tzutalin/labelImg) to annotate your images. You will obtain a single xml annotation for each image in your dataset. Suppose now you have a folder `img` with your images and a folder `annotations` with the annotations just generated.
+Using the script `create_csv.py` transform all the xml files in a single csv file.
 
 ```bash
 python3 create_csv.py xml annotations data.csv
