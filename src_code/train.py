@@ -66,6 +66,9 @@ if __name__ == '__main__':
         else:
             inference_type = 'FLOAT'
 
+        if 'model_dir' in training_params:
+            model_path = training_params['model_dir']
+
         image_shape = ','.join(['1', image_size, image_size, '3'])
 
         print('Setting number of steps to {}'.format(num_steps_hyperparam))

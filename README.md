@@ -7,11 +7,16 @@ First, I would like to thank the following user for their work: [svpino](https:/
 Part of this repo is taken from them and slightly adapted and everything is put together.
 We are going to use the Tensorflow Object Detection API v.1.14 on Tensorflow-GPU 1.15 for the training with a docker image on AWS Sagemaker.
 Specifically we will use a pretained model for transfer learning on a custom class and inference on Raspberry PI 4.
+
+You can choose to upload checkpoints and logs to S3 during training, in this way you can use your local tensorboard during training. Alternatively Sagemaker will keep logs and checkpoints in the instance and upload for you to S3 at the end of the training (together with the trained frozen model).  
+
+
 Content of this repo:
 
 * src_code: main code for the container to launch the training with Tensorflow Object Detection API.  
 * Dockerfile: dockerfile to build the container with Tensorflow Object Detection API and Coco API installed. 
 * Scripts for data preparation
+* aws_credentials: fill the files inside this folder with credentials that have s3 permission. This is required only if you want to upload logs and checkpoints during training.
 
 ## Install Tensorflow Object Detection API
 
@@ -131,6 +136,11 @@ The following list of hyperparameters are supported by the training script embed
 
 * inference_type: The type of inference that will be used if we are generating a TFLite model. This should be one of QUANTIZED_UINT8 or FLOAT values. This parameter is ignored if quantize is False. If not specified, this value defaults to FLOAT.
 
+* model_dir: (optional) You can specify a S3 bucket where tensorflow can send checkpoints and tfevents (logs for tensorboard) during training. In this way you can use tensorboard during training (see below) and not only at the end of training. In addition you can have checkpoints during training. This parameter is optional, if you omit it everything will be saved locally in the EC2 instance and copied back to S3 in a compressed archive. Example:
+
+    `s3://sagemaker-customname/result`
+
+
 ### Input data configuration 
 Create two channels under this section to allow SageMaker to expose the necessary resources to our docker image (select File for input mode):
 
@@ -151,6 +161,45 @@ When the model finishes training, SageMaker can upload the results to our S3 buc
 You can now start the training job. During the training you can click on the training job and view under "monitor" your metrics plotted, clicking on "view logs" you will be redirected to Amazon Cloudwatch, where you can see all the output of the training algorithm logged.
 At the end of the training, at the end of the page you have te link to directly download the model artifact, pushed back to our S3 bucket. You can point your local tensorboard to this folder to analyze in depth the training.
 
+## Tensorboard
+
+Install locally tensorboard and if you omitted `model_dir` hyperparameter simply download the model artifact from s3 at the end of the training, unpack it and launch:
+
+```bash
+tensorboard --logdir model
+```
+
+If you choose to send logs and checkpoints directly to s3 during training you can do this:
+
+```bash
+AWS_REGION=<your-region> AWS_LOG_LEVEL=3 tensorboard --logdir s3://sagemaker-customname/result/
+```
+
+Using tensorboard directly with s3 you will be charged with extra little cost. Amazon doesn't charge you for data transfer between services in the same region, so sending logs and checkpoint to S3 cost nothing in terms of data transfer (the same for the upload of the final artifact). Amazon anyway charge you for the operations (read/write/list..) and sending logs and checkpoints during training means many operations. In addition using tensorboard with s3 you pay for the number of operations on the bucket (tensorboard continuously polls the S3 filesystem to read logs), look [here](https://aws.amazon.com/s3/pricing/) under `data transfer` and for the operations on s3 in `requests and data retrievals`. 
+You will anyway pay for the data transfer between S3 and your local machine.
+
+During training and also during the use of tensorboard with S3 you can see errors like this (suppressed with AWS_LOG_LEVEL=3):
+
+```
+I tensorflow/core/platform/s3/aws_logging.cc:54] Connection has been released. Continuing.
+2020-11-23 11:41:02.502274: E tensorflow/core/platform/s3/aws_logging.cc:60] HTTP response code: 404
+Exception name: 
+Error message: No response body.
+6 response headers:
+connection : close
+content-type : application/xml
+date : Mon, 23 Nov 2020 10:41:01 GMT
+server : AmazonS3
+x-amz-id-2 : ...
+x-amz-request-id : ...
+2020-11-23 11:41:02.502364: W tensorflow/core/platform/s3/aws_logging.cc:57] If the signature check failed. This could be because of a time skew. Attempting to adjust the signer.
+2020-11-23 11:41:02.502699: I tensorflow/core/platform/s3/aws_logging.cc:54] Connection has been released. Continuing.
+2020-11-23 11:41:03.327409: I tensorflow/core/platform/s3/aws_logging.cc:54] Connection has been released. Continuing.
+2020-11-23 11:41:03.491773: E tensorflow/core/platform/s3/aws_logging.cc:60] HTTP response code: 404
+```
+
+You can simply ignore them, this is the [reason](https://github.com/tensorflow/serving/issues/789#issuecomment-372817753).
+
 ## Inference on Raspberry
 
 You should have downloaded the model artifacts, under model/graph you will find your frozen_inference_graph.pb which is the trained model. 
@@ -165,10 +214,9 @@ import cv2 as cv
 
 net = cv.dnn_DetectionModel('frozen_inference_graph.pb', 'cvgraph.pbtxt')
 
-# Following is not necessary, change it if you use another backend like Intel Inference Engine of OpenVino
+# The following is not necessary, change it if you use another backend like Intel Inference Engine of OpenVino
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
-
 
 net.setInputSize(300, 300)
 net.setInputSwapRB(True)

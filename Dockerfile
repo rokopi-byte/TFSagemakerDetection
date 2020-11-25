@@ -2,7 +2,7 @@ ARG ARCHITECTURE=1.15.0-gpu
 FROM tensorflow/tensorflow:${ARCHITECTURE}-py3
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        wget zip unzip git ca-certificates curl nginx
+        wget zip unzip git ca-certificates curl
 
 # We need to install Protocol Buffers (Protobuf). Protobuf is Google's language and platform-neutral,  
 # extensible mechanism for serializing structured data. To make sure you are using the most updated code,
@@ -24,9 +24,6 @@ RUN pip install contextlib2
 RUN pip install pillow
 RUN pip install lxml
 RUN pip install matplotlib
-RUN pip install flask
-RUN pip install gevent
-RUN pip install gunicorn
 RUN pip install pycocotools
 
 # Let's now download Tensorflow from the official Git repository and install Tensorflow Slim from
@@ -47,6 +44,12 @@ RUN git clone https://github.com/cocodataset/cocoapi.git
 WORKDIR /opt/ml/code/tensorflow-models/research/cocoapi/PythonAPI
 RUN make 
 RUN cp -r pycocotools /opt/ml/code/tensorflow-models/research/
+
+# Let's put AWS credentials, you can skip this part if you don't want to put log and checkpoints to S3 during training. They will be
+# uploaded anyway at the end of the training job, but you will not be able to use Tensorboard during training (only at the end)
+
+WORKDIR /root
+COPY /aws_credentials /root/.aws
 
 # Let's put the working directory back to where it needs to be, copy all of our code, and update the PYTHONPATH
 # to include the newly installed Tensorflow libraries.
