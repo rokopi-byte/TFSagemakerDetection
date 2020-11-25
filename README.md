@@ -8,7 +8,7 @@ Part of this repo is taken from them and slightly adapted and everything is put 
 We are going to use the Tensorflow Object Detection API v.1.14 on Tensorflow-GPU 1.15 for the training with a docker image on AWS Sagemaker.
 Specifically we will use a pretained model for transfer learning on a custom class and inference on Raspberry PI 4.
 
-You can choose to upload checkpoints and logs to S3 during training, in this way you can use your local tensorboard during training. Alternatively Sagemaker will keep logs and checkpoints in the instance and upload for you to S3 at the end of the training (together with the trained frozen model).  
+You can choose to upload checkpoints and logs to S3 during training, in this way you can use your local tensorboard during training. Alternatively Sagemaker will keep logs and checkpoints in the EC2 instance and upload for you to S3 at the end of the training (together with the trained frozen model).  
 
 
 Content of this repo:
@@ -124,7 +124,8 @@ Metric Name:loss Regex:] loss = ([0-9\.]+)
 Metric Name:step Regex:, step = ([0-9\.]+)
 ```
 
-Choose your instance type, look [here](https://aws.amazon.com/it/ec2/instance-types/#Accelerated_Computing) for the features and [here](https://aws.amazon.com/it/sagemaker/pricing/) for the prices. For example a `ml.p2.xlarge` will give you a single K80 GPU for 1.2$/hr. You may need additional storage on the instance, you can add here. This instance will be automatically closed after the training by Sagemaker, so you will only pay per second of training usage.
+Choose your instance type, look [here](https://aws.amazon.com/it/ec2/instance-types/#Accelerated_Computing) for the features and [here](https://aws.amazon.com/it/sagemaker/pricing/) for the prices. For example a `ml.p2.xlarge` will give you a single K80 GPU for 1.2$/hr. You may need additional storage on the instance, you can add here. Don't forget to disable network isolation if you intend to upload logs and checkpoints during training from the EC2 instance to sagemaker.
+This instance will be automatically closed after the training by Sagemaker, so you will only pay per second of training usage.
 The following list of hyperparameters are supported by the training script embedded in your docker image:
 
 ### Hyperparameters
