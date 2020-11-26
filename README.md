@@ -95,7 +95,9 @@ Select the repository and click "View push commands" and just follow the instruc
 
 Amazon S3 is the AWS storage service, and we use it to host all our input data and the output data (trained model, checkpoints.. )
 
-Next step is to upload all the necessary to S3, the Amazon storage service. Create a bucket and name it `sagemaker-customname` ("sagemaker" in the name will give automatically permission to sagameker for read/write from the bucket). Inside the bucket create two folders: `training/` and `checkpoint` and upload the necessary files generated/downloaded before, this will be the structure in S3:
+Next step is to upload all the necessary to S3, the Amazon storage service. Create a bucket and name it `sagemaker-customname` ("sagemaker" in the name will give automatically permission to sagameker for read/write from the bucket). Inside the bucket create two folders: `training/` and `checkpoint` and upload the necessary files generated/downloaded before. Only if you intend to save chekpoints and logs during training, create an additional bucket `result` (the alternative way is that Sagemaker upload everything at the end of the training, in that case Sagemaker automatically create a folder with the training job name). 
+
+This will be the structure in S3:
 
 ```
 └── sagemaker-customname
@@ -106,12 +108,14 @@ Next step is to upload all the necessary to S3, the Amazon storage service. Crea
      │     ├── pipeline.config
      │     └── label_map.pbtxt
      │
-     └─── checkpoint/
-          ├── checkpoint
-          ├── frozen_inference_graph.pb
-          ├── model.ckpt.data-00000-of-00001
-          ├── model.ckpt.meta
-          └── model.ckpt.index
+     ├─── checkpoint/
+     │    ├── checkpoint
+     │    ├── frozen_inference_graph.pb
+     │    ├── model.ckpt.data-00000-of-00001
+     │    ├── model.ckpt.meta
+     │    └── model.ckpt.index
+     │
+     └─── result/
 ```
 
 ## Amazon Sagemaker 
