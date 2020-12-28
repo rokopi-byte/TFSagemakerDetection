@@ -57,4 +57,4 @@ WORKDIR /opt/ml/code
 COPY /src_code /opt/ml/code
 ENV PYTHONPATH=${PYTHONPATH}:tensorflow-models/research:tensorflow-models/research/slim:tensorflow-models/research/object_detection
 
-RUN chmod +x train.py
+RUN chmod +x train
