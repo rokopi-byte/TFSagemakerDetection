@@ -18,9 +18,6 @@ Content of this repo:
 * Scripts for data preparation
 * aws_credentials: fill the files inside this folder with credentials that have s3 permission. This is required only if you want to upload logs and checkpoints during training.
 
-## Install Tensorflow Object Detection API
-
-You can follow the official [repo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf1.md) to install locally the Tensorflow Object Detection API. This [tutorial](https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/tensorflow-1.14/index.html) also cover most of things listed here, also explaining how to optionally install the COCO API for the metrics.
 
 ## Data preparation
 
@@ -37,7 +34,7 @@ python3 create_csv.py xml annotations data.csv
 TensorFlow requires a label map file, which maps each of the used labels to an integer values. This file is specific to your dataset, unless you change the classes to detect you need to generate this only once.
 
 ```bash
-python3 generate_label_map csv data.csv label_map.pbtxt
+python3 generate_label_map.py csv data.csv label_map.pbtxt
 ```
 
 ### Dataset Splitting

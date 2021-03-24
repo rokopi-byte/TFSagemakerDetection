@@ -12,7 +12,7 @@ from PIL import Image
 from tqdm import tqdm
 import sys
 
-from object_detection.utils import dataset_util
+import dataset_util
 from collections import namedtuple, OrderedDict
 
 
