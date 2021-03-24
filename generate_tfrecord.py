@@ -30,7 +30,13 @@ def create_tf_example(group, path, class_dict):
                         'rb') as fid:
         encoded_jpg = fid.read()
     encoded_jpg_io = io.BytesIO(encoded_jpg)
-    image = Image.open(encoded_jpg_io)
+    try:
+        image = Image.open(encoded_jpg_io)
+    except Exception as ex:
+        print(ex)
+        print('Invalid image, skipping: ', group.filename)
+        return None
+
     width, height = image.size
 
     filename = group.filename.encode('utf8')
@@ -153,7 +159,8 @@ if __name__ == '__main__':
 
     for group in tqdm(grouped, desc='groups'):
         tf_example = create_tf_example(group, path, class_dict)
-        writer.write(tf_example.SerializeToString())
+        if tf_example is not None:
+            writer.write(tf_example.SerializeToString())
 
     writer.close()
     output_path = os.path.join(os.getcwd(), args.output_path)
